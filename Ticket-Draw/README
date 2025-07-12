@@ -1,0 +1,209 @@
+# EventMaster - Decentralized Event Ticketing Platform
+
+A comprehensive blockchain-based ticketing system built on the Stacks blockchain that enables event organizers to create, manage, and sell tickets while providing secure ticket ownership, transfers, and validation for attendees.
+
+##  Overview
+
+EventMaster revolutionizes event ticketing by leveraging blockchain technology to provide:
+
+- **Decentralized Ticket Management**: No central authority controls your tickets
+- **Secure Ownership**: Cryptographic proof of ticket ownership
+- **Transparent Transactions**: All ticket sales and transfers are recorded on-chain
+- **Anti-Fraud Protection**: Immutable ticket records prevent counterfeiting
+- **Direct Organizer-Attendee Interaction**: Reduced intermediary fees
+
+##  Features
+
+### For Event Organizers
+- **Create Events**: Launch events with customizable details, pricing, and capacity
+- **Manage Ticket Sales**: Control ticket availability and pricing
+- **Real-time Analytics**: Track sales, remaining tickets, and event status
+- **Revenue Distribution**: Automatic payment processing with platform fee deduction
+- **Event Control**: Enable/disable ticket sales and update event information
+
+### For Attendees
+- **Secure Ticket Purchase**: Buy tickets with STX cryptocurrency
+- **Ticket Ownership**: True ownership of digital tickets as blockchain assets
+- **Transfer Tickets**: Send tickets to other users securely
+- **Batch Purchasing**: Buy multiple tickets in a single transaction
+- **Ticket Validation**: Redeem tickets with cryptographic verification
+
+### Platform Features
+- **Low Fees**: Configurable platform fees (default 2.5%)
+- **Scalable Architecture**: Support for multiple events and high transaction volume
+- **Admin Controls**: Emergency controls for platform security
+- **Comprehensive Tracking**: Full audit trail of all transactions
+
+##  Contract Structure
+
+### Core Components
+
+1. **Event Registry**: Stores all event information and metadata
+2. **Ticket Registry**: Manages individual ticket ownership and status
+3. **User Collections**: Tracks tickets owned by each user per event
+4. **Organizer Portfolio**: Manages events created by each organizer
+5. **Availability Cache**: Optimizes ticket availability queries
+
+### Key Functions
+
+#### Event Management
+- `create-new-event`: Create a new event with all details
+- `update-event-information`: Modify event details (organizer only)
+- `toggle-event-status`: Enable/disable ticket sales
+- `emergency-disable-event`: Admin emergency control
+
+#### Ticket Operations
+- `purchase-event-ticket`: Buy a single ticket
+- `purchase-multiple-tickets`: Buy multiple tickets at once
+- `transfer-ticket-ownership`: Transfer ticket to another user
+- `redeem-ticket`: Mark ticket as used at event
+
+#### Query Functions
+- `get-event-information`: Retrieve event details
+- `get-ticket-details`: Get ticket information
+- `get-user-event-ticket-collection`: View user's tickets for an event
+- `check-event-ticket-availability`: Check if tickets are available
+
+##  Technical Specifications
+
+### Constants
+- **Max Tickets Per User**: 10 per transaction
+- **Max Events Per Organizer**: 100
+- **Max User Ticket Lists**: 50
+- **Default Platform Fee**: 2.5% (250 basis points)
+- **Maximum Platform Fee**: 10% (1000 basis points)
+
+### Error Codes
+- `ERR-UNAUTHORIZED-ACCESS (100)`: User lacks permission
+- `ERR-RESOURCE-NOT-FOUND (101)`: Event/ticket doesn't exist
+- `ERR-INVALID-INPUT-DATA (108)`: Invalid parameters provided
+- `ERR-TICKETS-SOLD-OUT (106)`: No tickets available
+- `ERR-EVENT-DATE-PASSED (111)`: Event has already occurred
+- `ERR-TICKET-ALREADY-USED (107)`: Ticket has been redeemed
+
+### Data Structures
+
+#### Event Data
+```clarity
+{
+  event-title: (string-ascii 100),
+  event-description: (string-ascii 500),
+  event-organizer: principal,
+  ticket-price-micro-stx: uint,
+  maximum-ticket-supply: uint,
+  current-tickets-sold: uint,
+  event-timestamp: uint,
+  event-status-active: bool,
+  event-venue-location: (string-ascii 200),
+  creation-block-height: uint
+}
+```
+
+#### Ticket Data
+```clarity
+{
+  associated-event-id: uint,
+  ticket-owner-principal: principal,
+  purchase-block-height: uint,
+  ticket-used-status: bool,
+  paid-price-micro-stx: uint,
+  original-purchaser: principal
+}
+```
+
+##  Deployment Guide
+
+### Prerequisites
+- Stacks CLI installed
+- Testnet/Mainnet STX tokens for deployment
+- Clarity development environment
+
+### Deployment Steps
+
+1. **Clone the Repository**
+```bash
+git clone <repository-url>
+cd eventmaster-contracts
+```
+
+2. **Test the Contract**
+```bash
+clarinet test
+```
+
+3. **Deploy to Testnet**
+```bash
+clarinet deploy --testnet
+```
+
+4. **Deploy to Mainnet**
+```bash
+clarinet deploy --mainnet
+```
+
+### Configuration
+- Update `contract-administrator` before deployment
+- Configure `default-platform-fee-basis-points` as needed
+- Set appropriate maximum limits for your use case
+
+##  Usage Examples
+
+### Creating an Event
+```clarity
+(contract-call? .eventmaster create-new-event
+  "Tech Conference 2024"
+  "Annual technology conference featuring industry leaders"
+  u1000000  ;; 1 STX per ticket
+  u500      ;; 500 tickets available
+  u2000000  ;; Event timestamp
+  "Convention Center, Tech City"
+)
+```
+
+### Purchasing Tickets
+```clarity
+;; Single ticket
+(contract-call? .eventmaster purchase-event-ticket u1)
+
+;; Multiple tickets
+(contract-call? .eventmaster purchase-multiple-tickets u1 u5)
+```
+
+### Transferring a Ticket
+```clarity
+(contract-call? .eventmaster transfer-ticket-ownership 
+  u123 
+  'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7
+)
+```
+
+##  Security Features
+
+### Input Validation
+- All user inputs are validated before processing
+- String length and format validation
+- Numerical bounds checking
+- Principal validation
+
+### Access Control
+- Role-based permissions (organizer, admin, user)
+- Ownership verification for all operations
+- Event-specific access controls
+
+### Financial Security
+- Automatic payment splitting
+- Platform fee calculation and distribution
+- Protection against double-spending
+- Secure STX transfers
+
+## Fee Structure
+
+### Platform Fees
+- **Default Rate**: 2.5% of ticket price
+- **Maximum Rate**: 10% of ticket price
+- **Fee Distribution**: Automatically split between organizer and platform
+
+### Gas Costs
+- Event creation: ~0.01 STX
+- Ticket purchase: ~0.005 STX
+- Ticket transfer: ~0.003 STX
